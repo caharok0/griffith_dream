@@ -1,10 +1,11 @@
-```html
 <!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Куточок - Grifisu</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -13,293 +14,389 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
+        :root {
+            --primary: #3B82F6;
+            --primary-dark: #2563EB;
+            --primary-light: #60A5FA;
+            --accent: #10B981;
+            --accent-dark: #059669;
+            --dark: #1F2937;
+            --darker: #111827;
+            --light: #F9FAFB;
+            --error: #EF4444;
+            --success: #10B981;
+        }
+        
         body {
-            background-color: #1a1a2e;
-            color: #fff;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--light);
             padding: 20px;
             min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
         
         header {
             text-align: center;
             margin-bottom: 30px;
-            padding: 20px;
-            background: linear-gradient(135deg, #16213e, #0f3460);
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            border: 1px solid #00ff88;
+            padding: 30px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 20px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
         
         h1 {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             margin-bottom: 10px;
-            color: #00ff88;
-            text-shadow: 0 0 10px #00ff88;
+            background: linear-gradient(45deg, var(--primary-light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            color: var(--primary-light);
+            margin-bottom: 25px;
+            opacity: 0.9;
         }
         
         .admin-panel {
-            background: rgba(0, 255, 136, 0.1);
-            border: 1px solid #00ff88;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 20px 0;
+            background: rgba(31, 41, 55, 0.95);
+            border: 1px solid var(--primary);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px auto;
             max-width: 500px;
-            margin-left: auto;
-            margin-right: auto;
-            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
         
         .admin-hidden {
             display: none;
         }
         
-        .admin-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .admin-section {
-            display: none;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid rgba(0, 255, 136, 0.3);
-        }
-        
-        .admin-section.active {
-            display: flex;
-        }
-        
-        .toggle-admin {
-            background: linear-gradient(135deg, #00ff88, #0f3460);
-            border: none;
-            border-radius: 5px;
-            color: white;
-            padding: 10px 15px;
+        .upload-area {
+            border: 2px dashed var(--primary);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
             cursor: pointer;
-            margin: 10px auto;
-            display: block;
             transition: all 0.3s ease;
-            font-weight: bold;
         }
         
-        .toggle-admin:hover {
+        .upload-area:hover {
+            background: rgba(59, 130, 246, 0.1);
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
         }
         
-        .toggle-admin.active {
-            background: linear-gradient(135deg, #00ff88, #00cc66);
-            box-shadow: 0 0 15px #00ff88;
+        .upload-area i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 15px;
         }
         
-        input[type="text"], input[type="password"], input[type="file"] {
-            padding: 12px;
-            border: 1px solid #0f3460;
-            border-radius: 5px;
-            background-color: #0a1a33;
-            color: white;
+        input, button, select {
             width: 100%;
-            margin-bottom: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 10px;
+            background: rgba(31, 41, 55, 0.8);
+            color: var(--light);
             font-size: 1rem;
+            transition: all 0.3s ease;
         }
         
-        input:focus {
+        input:focus, select:focus {
             outline: none;
-            border-color: #00ff88;
-            box-shadow: 0 0 5px #00ff88;
-        }
-        
-        input::placeholder {
-            color: #8da0b6;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
         
         button {
-            background: linear-gradient(135deg, #00ff88, #0f3460);
+            background: linear-gradient(45deg, var(--primary), var(--primary-dark));
             border: none;
-            border-radius: 5px;
-            color: white;
-            padding: 12px 15px;
             cursor: pointer;
+            font-weight: 600;
             transition: all 0.3s ease;
-            font-weight: bold;
         }
         
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.4);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-stop {
+            background: linear-gradient(45deg, var(--error), #DC2626);
+        }
+        
+        .btn-admin {
+            background: linear-gradient(45deg, var(--accent), var(--accent-dark));
         }
         
         .controls {
             display: flex;
             justify-content: center;
             gap: 20px;
-            margin: 20px 0;
+            margin: 25px 0;
             flex-wrap: wrap;
         }
         
-        .search-container {
+        .control-group {
             display: flex;
-            gap: 10px;
-            max-width: 400px;
-            width: 100%;
+            align-items: center;
+            gap: 15px;
+            background: rgba(31, 41, 55, 0.8);
+            padding: 15px 25px;
+            border-radius: 50px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .control-group:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+            transform: translateY(-2px);
         }
         
         .sound-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
         }
         
-        .sound-button {
-            background: linear-gradient(135deg, #0f3460, #16213e);
-            border: 2px solid transparent;
-            border-radius: 8px;
-            color: white;
-            padding: 15px;
-            font-size: 1rem;
+        .sound-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(31, 41, 55, 0.8));
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 15px;
+            padding: 25px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            min-height: 100px;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 140px;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
-            word-break: break-word;
-            position: relative;
         }
         
-        .sound-button:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
-            border-color: #00ff88;
-            background: linear-gradient(135deg, #0a1a33, #0f3460);
+        .sound-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            transition: left 0.6s ease;
         }
         
-        .sound-button:active {
-            transform: translateY(1px);
+        .sound-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: var(--primary);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
         }
         
-        .playing {
-            background: linear-gradient(135deg, #00ff88, #00cc66);
-            animation: pulse 0.5s infinite alternate;
-            border-color: #00ff88;
-            box-shadow: 0 0 20px #00ff88;
+        .sound-card:hover::before {
+            left: 100%;
+        }
+        
+        .sound-card.playing {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(16, 185, 129, 0.2));
+            animation: pulse 2s infinite;
+            border-color: var(--primary);
         }
         
         @keyframes pulse {
-            from { 
+            0% { 
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
                 transform: scale(1);
-                box-shadow: 0 0 15px #00ff88;
             }
-            to { 
-                transform: scale(1.03);
-                box-shadow: 0 0 25px #00ff88;
+            50% {
+                transform: scale(1.02);
             }
+            100% { 
+                box-shadow: 0 0 0 15px rgba(59, 130, 246, 0);
+                transform: scale(1);
+            }}
+        
+        .sound-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--light);
+            line-height: 1.3;
+        }
+        
+        .sound-info {
+            font-size: 0.9rem;
+            color: var(--primary-light);
+            margin-bottom: 5px;
         }
         
         .sound-duration {
             font-size: 0.8rem;
-            color: #8da0b6;
-            margin-top: 5px;
+            color: var(--accent);
+            background: rgba(16, 185, 129, 0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .sound-category {
+            font-size: 0.8rem;
+            color: var(--primary-light);
+            background: rgba(59, 130, 246, 0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-block;
         }
         
         .delete-btn {
             position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(231, 76, 60, 0.9);
+            top: 15px;
+            right: 15px;
+            background: var(--error);
             border: none;
             border-radius: 50%;
-            width: 25px;
-            height: 25px;
+            width: 35px;
+            height: 35px;
             color: white;
             cursor: pointer;
-            font-size: 0.9rem;
             display: none;
+            align-items: center;
+            justify-content: center;
             transition: all 0.3s ease;
+            z-index: 2;
+        }
+        
+        .sound-card:hover .delete-btn {
+            display: flex;
         }
         
         .delete-btn:hover {
-            background: rgba(231, 76, 60, 1);
             transform: scale(1.1);
-        }
-        
-        .admin-logged-in .delete-btn {
-            display: block;
-        }
-        
-        .volume-control {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 20px 0;
-            gap: 10px;
-        }
-        
-        #volume-slider {
-            width: 200px;
-            height: 5px;
-            background: #0f3460;
-            border-radius: 5px;
-            outline: none;
-        }
-        
-        #volume-slider::-webkit-slider-thumb {
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: #00ff88;
-            cursor: pointer;
-            box-shadow: 0 0 5px #00ff88;
+            background: #DC2626;
         }
         
         .status-message {
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
             text-align: center;
-            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(-10px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
         }
         
         .success {
-            background: rgba(46, 204, 113, 0.2);
-            border: 1px solid #2ecc71;
-            display: block;
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid var(--success);
         }
         
         .error {
-            background: rgba(231, 76, 60, 0.2);
-            border: 1px solid #e74c3c;
-            display: block;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid var(--error);
         }
         
-        .file-info {
-            font-size: 0.8rem;
-            color: #8da0b6;
-            margin-top: 5px;
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
         }
         
-        .admin-logged-in .admin-panel {
-            background: rgba(0, 255, 136, 0.2);
-            border: 2px solid #00ff88;
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(31, 41, 55, 0.8);
+            border-radius: 3px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            background: rgba(31, 41, 55, 0.6);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: auto;
+        }
+        
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(249, 250, 251, 0.5);
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
         }
         
         @media (max-width: 768px) {
-            .sound-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            body {
+                padding: 15px;
             }
             
             h1 {
-                font-size: 2rem;
+                font-size: 2.2rem;
             }
             
             .controls {
@@ -307,509 +404,575 @@
                 align-items: center;
             }
             
-            .search-container {
-                max-width: 100%;
+            .control-group {
+                width: 100%;
+                max-width: 400px;
+            }
+            
+            .sound-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .sound-card {
+                padding: 20px;
+                min-height: 120px;
             }
             
             .admin-panel {
                 margin: 10px;
-                padding: 10px;
+                padding: 20px;
             }
             
-            .admin-section {
-                gap: 8px;
+            .filter-buttons {
+                gap: 5px;
             }
             
-            input[type="text"], input[type="password"], input[type="file"] {
-                padding: 10px;
-                font-size: 16px; /* Запобігає збільшенню в iOS */
+            .filter-btn {
+                padding: 8px 16px;
+                font-size: 0.9rem;
             }
         }
         
         @media (max-width: 480px) {
-            body {
-                padding: 10px;
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .tagline {
+                font-size: 1rem;
             }
             
             header {
+                padding: 20px;
+            }
+            
+            .sound-card {
                 padding: 15px;
+                min-height: 100px;
             }
             
-            .sound-grid {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                gap: 10px;
+            .sound-title {
+                font-size: 1.1rem;
             }
-            
-            .sound-button {
-                padding: 12px;
-                min-height: 90px;
-                font-size: 0.9rem;
-            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Куточок - Grifisu</h1>
-        <p>Слухайте разом з друзями</p>
-        
-        <button class="toggle-admin" id="toggle-admin">🔧 Режим адміністратора</button>
-        
-        <div class="admin-panel admin-hidden" id="admin-panel">
-            <h3>Панель адміністратора</h3>
-            <div class="admin-controls">
-                <div id="login-section">
-                    <input type="password" id="admin-password" placeholder="Введіть пароль">
-                    <button id="login-btn">Увійти</button>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-music"></i> Куточок - Grifisu</h1>
+            <p class="tagline">Музика зберігається безпосередньо на сайті</p>
+            
+            <button onclick="toggleAdminPanel()" class="btn-admin" id="admin-btn">
+                <i class="fas fa-cogs"></i> Панель адміністратора
+            </button>
+            
+            <div class="admin-panel admin-hidden" id="admin-panel">
+                <h3><i class="fas fa-cloud-upload-alt"></i> Додати музику на сайт</h3>
+                
+                <div class="upload-area" onclick="document.getElementById('music-file').click()" id="upload-zone">
+                    <i class="fas fa-file-audio"></i>
+                    <h4>Натисніть для вибору аудіофайлу</h4>
+                    <p>MP3, WAV, OGG, M4A (макс. 50MB)</p>
+                    <input type="file" id="music-file" accept="audio/*" hidden>
                 </div>
                 
-                <div class="admin-section" id="admin-section">
-                    <h4>Додати новий трек</h4>
-                    <input type="text" id="music-name" placeholder="Назва треку">
-                    <input type="file" id="music-file" accept="audio/*">
-                    <div class="file-info" id="file-info">Максимальний розмір: 50MB</div>
-                    <button id="add-music-btn">Додати музику</button>
-                    <div class="status-message" id="status-message"></div>
+                <div id="file-info" class="file-info"></div>
+                
+                <div class="progress-bar" id="progress-bar" style="display: none;">
+                    <div class="progress" id="progress"></div>
+                </div>
+                
+                <input type="text" id="music-name" placeholder="Назва треку (обов'язково)">
+                
+                <select id="music-category">
+                    <option value="chill">🎵 Chill</option>
+                    <option value="rock">🎸 Rock</option>
+                    <option value="pop">🎤 Pop</option>
+                    <option value="electronic">⚡ Electronic</option>
+                    <option value="classical">🎻 Classical</option>
+                    <option value="hiphop">🎧 Hip-Hop</option>
+                    <option value="jazz">🎷 Jazz</option>
+                    <option value="other">🔮 Other</option>
+                </select>
+                
+                <button onclick="uploadMusic()" id="upload-btn">
+                    <i class="fas fa-upload"></i> Завантажити на сайт
+                </button>
+                
+                <div id="status-message"></div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Пошук музики..." style="background: transparent; border: none; margin: 0;">
+                </div>
+                
+                <div class="control-group">
+                    <i class="fas fa-volume-up"></i>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.7">
+                    <span id="volume-value">70%</span>
+                </div>
+                
+                <button onclick="stopMusic()" class="btn-stop">
+                    <i class="fas fa-stop"></i> Зупинити
+                </button>
+            </div>
+        </header>
+        
+        <main>
+            <div class="filter-buttons">
+                <button onclick="filterMusic('all')" class="filter-btn active">🎵 Всі треки</button>
+                <button onclick="filterMusic('chill')" class="filter-btn">😌 Chill</button>
+                <button onclick="filterMusic('rock')" class="filter-btn">🎸 Rock</button>
+                <button onclick="filterMusic('pop')" class="filter-btn">🎤 Pop</button>
+                <button onclick="filterMusic('electronic')" class="filter-btn">⚡ Electronic</button>
+            </div>
+            
+            <div class="sound-grid" id="sound-container">
+                <div class="empty-state">
+                    <i class="fas fa-music"></i>
+                    <h3>Завантаження музики...</h3>
+                    <p>Момент терпіння</p>
                 </div>
             </div>
-        </div>
-        
-        <div class="controls">
-            <div class="search-container">
-                <input type="text" id="search-input" placeholder="Пошук музики...">
-                <button id="search-btn">🔍</button>
-            </div>
-        </div>
-        
-        <div class="volume-control">
-            <span>🔊</span>
-            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.7">
-            <span id="volume-value">70%</span>
-        </div>
-    </header>
-    
-    <main>
-        <div class="sound-grid" id="sound-container">
-            <!-- Кнопки музики будуть додані через JavaScript -->
-        </div>
-    </main>
+        </main>
+    </div>
 
     <script>
-        // Пароль адміністратора
-        const ADMIN_PASSWORD = "842861";
-        const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+        // ==== НАЛАШТУВАНЯ SUPABASE ====
+        const SUPABASE_URL = 'https://vqnnxwsfcihayejzsptt.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_-opPMeOZ8r3FBDcu_y4_Og_R_n2dL6m';
         
-        // Масив для зберігання музики
-        let sharedMusic = [];
+        // Ініціалізація Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // Елементи DOM
-        const soundContainer = document.getElementById('sound-container');
-        const searchInput = document.getElementById('search-input');
-        const searchBtn = document.getElementById('search-btn');
-        const volumeSlider = document.getElementById('volume-slider');
-        const volumeValue = document.getElementById('volume-value');
-        const toggleAdminBtn = document.getElementById('toggle-admin');
-        const adminPanel = document.getElementById('admin-panel');
-        const adminPassword = document.getElementById('admin-password');
-        const loginBtn = document.getElementById('login-btn');
-        const loginSection = document.getElementById('login-section');
-        const adminSection = document.getElementById('admin-section');
-        const musicName = document.getElementById('music-name');
-        const musicFile = document.getElementById('music-file');
-        const fileInfo = document.getElementById('file-info');
-        const addMusicBtn = document.getElementById('add-music-btn');
-        const statusMessage = document.getElementById('status-message');
-        
-        // Поточний аудіо елемент
         let currentAudio = null;
         let isAdmin = false;
-        
-        // Завантаження музики з локального сховища
-        function loadMusicFromStorage() {
-            const savedMusic = localStorage.getItem('sharedMusic');
-            if (savedMusic) {
-                try {
-                    sharedMusic = JSON.parse(savedMusic);
-                    // Перевірка чи URL дійсні
-                    sharedMusic = sharedMusic.filter(music => {
-                        if (music.url && music.url.startsWith('blob:')) {
-                            try {
-                                new Audio(music.url);
-                                return true;
-                            } catch (e) {
-                                return false;
-                            }
-                        }
-                        return true;
-                    });
-                    initMusicButtons();
-                } catch (e) {
-                    console.error("Помилка завантаження музики:", e);
-                    sharedMusic = [];
-                    initMusicButtons();
+        let allMusic = [];
+        let filteredMusic = [];
+
+        // Перевірка адміністратора
+        function checkAdmin() {
+            const password = localStorage.getItem('admin_password');
+            return password === '842861';
+        }
+
+        // Завантаження музики з Supabase
+        async function loadMusic() {
+            showStatus('Завантаження музики...', '');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('music')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                allMusic = data || [];
+                filteredMusic = [...allMusic];
+                renderMusic();
+                
+                if (allMusic.length > 0) {
+                    showStatus(`Завантажено ${allMusic.length} треків`, 'success');
+                } else {
+                    showStatus('Музика ще не додана. Додайте перший трек!', '');
                 }
-            } else {
-                // Демо-музика при першому завантаженні
-                sharedMusic = [
-                    {
-                        id: 1,
-                        name: "Демо трек 1",
-                        url: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
-                        duration: 5
-                    },
-                    {
-                        id: 2,
-                        name: "Демо трек 2", 
-                        url: "https://www.soundjay.com/misc/sounds/applause-01.wav",
-                        duration: 3
-                    }
-                ];
-                saveMusicToStorage();
-                initMusicButtons();
+                
+            } catch (error) {
+                console.error('Помилка завантаження:', error);
+                showStatus('Помилка завантаження музики', 'error');
             }
         }
-        
-        // Збереження музики в локальне сховище
-        function saveMusicToStorage() {
-            localStorage.setItem('sharedMusic', JSON.stringify(sharedMusic));
-        }
-        
-        // Ініціалізація музичних кнопок
-        function initMusicButtons() {
-            soundContainer.innerHTML = '';
+
+        // Завантаження файлу на Supabase Storage
+        async function uploadMusic() {
+            const fileInput = document.getElementById('music-file');
+            const nameInput = document.getElementById('music-name');
+            const categorySelect = document.getElementById('music-category');
             
-            if (sharedMusic.length === 0) {
-                soundContainer.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #8da0b6; padding: 40px;">Музика ще не додана</p>';
+            if (!fileInput.files[0]) {
+                showStatus('Будь ласка, виберіть аудіофайл', 'error');
+                document.getElementById('upload-zone').classList.add('shake');
+                setTimeout(() => document.getElementById('upload-zone').classList.remove('shake'), 500);
                 return;
             }
             
-            sharedMusic.forEach((music) => {
-                const button = document.createElement('button');
-                button.className = 'sound-button';
-                
-                // Форматування тривалості
-                const duration = music.duration ? formatDuration(music.duration) : 'Невідомо';
-                
-                button.innerHTML = `
-                    <span>${music.name}</span>
-                    <div class="sound-duration">${duration}</div>
-                    ${isAdmin ? `<button class="delete-btn" data-id="${music.id}">×</button>` : ''}
-                `;
-                
-                button.addEventListener('click', () => playMusic(music, button));
-                soundContainer.appendChild(button);
-            });
-            
-            // Додавання обробників для кнопок видалення (тільки для адміна)
-            if (isAdmin) {
-                document.querySelectorAll('.delete-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const id = parseInt(btn.getAttribute('data-id'));
-                        deleteMusic(id);
-                    });
-                });
-            }
-        }
-        
-        // Відтворення музики
-        function playMusic(music, button) {
-            // Зупинити поточну музику, якщо вона грає
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio.currentTime = 0;
-                document.querySelectorAll('.sound-button').forEach(btn => {
-                    btn.classList.remove('playing');
-                });
-            }
-            
-            // Додати клас анімації до натиснутої кнопки
-            button.classList.add('playing');
-            
-            // Створити новий аудіо елемент
-            currentAudio = new Audio(music.url);
-            currentAudio.volume = volumeSlider.value;
-            currentAudio.play().catch(e => {
-                console.error("Помилка відтворення:", e);
-                button.classList.remove('playing');
-                showStatus("Помилка відтворення музики", "error");
-            });
-            
-            // Видалити клас анімації після завершення відтворення
-            currentAudio.onended = () => {
-                button.classList.remove('playing');
-            };
-            
-            currentAudio.onerror = () => {
-                button.classList.remove('playing');
-                showStatus("Помилка відтворення музики", "error");
-            };
-        }
-        
-        // Додавання нової музики (тільки для адміна)
-        function addNewMusic() {
-            if (!musicFile.files[0]) {
-                showStatus("Будь ласка, виберіть аудіофайл", "error");
+            if (!nameInput.value.trim()) {
+                showStatus('Введіть назву треку', 'error');
+                nameInput.focus();
                 return;
             }
             
-            const file = musicFile.files[0];
-            const name = musicName.value || file.name.replace(/\.[^/.]+$/, "");
+            const file = fileInput.files[0];
+            const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
             
-            // Перевірка розміру файлу (макс. 50MB)
-            if (file.size > MAX_FILE_SIZE) {
-                showStatus(`Файл занадто великий (макс. ${formatFileSize(MAX_FILE_SIZE)})`, "error");
+            // Перевірка розміру
+            if (file.size > 50 * 1024 * 1024) {
+                showStatus('Файл занадто великий (макс. 50MB)', 'error');
                 return;
             }
             
             // Перевірка типу файлу
             if (!file.type.startsWith('audio/')) {
-                showStatus("Будь ласка, виберіть аудіофайл", "error");
+                showStatus('Будь ласка, виберіть аудіофайл', 'error');return;
+            }
+            
+            // Показуємо прогрес
+            const progressBar = document.getElementById('progress-bar');
+            const progress = document.getElementById('progress');
+            const uploadBtn = document.getElementById('upload-btn');
+            
+            progressBar.style.display = 'block';
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<div class="loading"></div> Завантаження...';
+            
+            try {
+                // Завантажуємо файл в Storage
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('music')
+                    .upload(fileName, file);
+                
+                if (uploadError) throw uploadError;
+                
+                // Отримуємо публічний URL
+                const { data: urlData } = supabase.storage
+                    .from('music')
+                    .getPublicUrl(fileName);
+                
+                // Отримуємо тривалість аудіо
+                const duration = await getAudioDuration(file);
+                
+                // Зберігаємо в базу даних
+                const { data: dbData, error: dbError } = await supabase
+                    .from('music')
+                    .insert([
+                        {
+                            name: nameInput.value.trim(),
+                            file_name: fileName,
+                            url: urlData.publicUrl,
+                            duration: duration,
+                            category: categorySelect.value,
+                            file_size: file.size,
+                            file_type: file.type
+                        }
+                    ]);
+                
+                if (dbError) throw dbError;
+                
+                showStatus('🎵 Музика успішно завантажена на сайт!', 'success');
+                
+                // Очищаємо форму
+                fileInput.value = '';
+                nameInput.value = '';
+                document.getElementById('file-info').textContent = '';
+                progressBar.style.display = 'none';
+                
+                // Перезавантажуємо музику
+                await loadMusic();
+                
+            } catch (error) {
+                console.error('Помилка завантаження:', error);
+                showStatus('Помилка завантаження: ' + error.message, 'error');
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Завантажити на сайт';
+            }
+        }
+
+        // Отримання тривалості аудіо
+        function getAudioDuration(file) {
+            return new Promise((resolve) => {
+                const audio = new Audio();
+                audio.src = URL.createObjectURL(file);
+                audio.onloadedmetadata = () => {
+                    resolve(Math.round(audio.duration));
+                    URL.revokeObjectURL(audio.src);
+                };
+                audio.onerror = () => resolve(0);
+            });
+        }
+
+        // Відтворення музики
+        function playMusic(music) {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+            
+            currentAudio = new Audio(music.url);
+            currentAudio.volume = document.getElementById('volume-slider').value;
+            
+            currentAudio.play().catch(error => {
+                showStatus('Помилка відтворення: ' + error, 'error');
+            });
+            
+            // Оновлюємо інтерфейс
+            document.querySelectorAll('.sound-card').forEach(card => {
+                card.classList.remove('playing');
+            });
+            event.currentTarget.classList.add('playing');
+            
+            currentAudio.onended = () => {
+                event.currentTarget.classList.remove('playing');
+                currentAudio = null;
+            };
+            
+            currentAudio.onerror = () => {
+                event.currentTarget.classList.remove('playing');
+                showStatus('Помилка відтворення музики', 'error');
+                currentAudio = null;
+            };
+        }
+
+        // Зупинка музики
+        function stopMusic() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;currentAudio = null;
+            }
+            
+            document.querySelectorAll('.sound-card').forEach(card => {
+                card.classList.remove('playing');
+            });
+        }
+
+        // Видалення музики
+        async function deleteMusic(musicId, fileName) {
+            if (!confirm('Ви впевнені, що хочете видалити цей трек?')) return;
+            
+            try {
+                // Видаляємо з бази даних
+                const { error: dbError } = await supabase
+                    .from('music')
+                    .delete()
+                    .eq('id', musicId);
+                
+                if (dbError) throw dbError;
+                
+                // Видаляємо файл з Storage
+                const { error: storageError } = await supabase.storage
+                    .from('music')
+                    .remove([fileName]);
+                
+                if (storageError) throw storageError;
+                
+                showStatus('Трек успішно видалено', 'success');
+                await loadMusic();
+                
+                // Зупинити якщо видаляємо поточний трек
+                if (currentAudio) {
+                    stopMusic();
+                }
+                
+            } catch (error) {
+                console.error('Помилка видалення:', error);
+                showStatus('Помилка видалення', 'error');
+            }
+        }
+
+        // Фільтрація музики
+        function filterMusic(category) {
+            if (category === 'all') {
+                filteredMusic = [...allMusic];
+            } else {
+                filteredMusic = allMusic.filter(music => music.category === category);
+            }
+            
+            // Оновлюємо активну кнопку
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            renderMusic();
+        }
+
+        // Відображення музики
+        function renderMusic() {
+            const container = document.getElementById('sound-container');
+            
+            if (filteredMusic.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-music"></i>
+                        <h3>Нічого не знайдено</h3>
+                        <p>Спробуйте інший фільтр або додайте нову музику</p>
+                    </div>
+                `;
                 return;
             }
             
-            // Створення URL для файлу
-            const url = URL.createObjectURL(file);
+            container.innerHTML = '';
             
-            // Створення аудіо елемента для отримання тривалості
-            const audio = new Audio();
-            audio.src = url;
-            
-            audio.addEventListener('loadedmetadata', () => {
-                const newMusic = {
-                    id: Date.now(), // Унікальний ID
-                    name: name,
-                    url: url,
-                    duration: audio.duration,
-                    size: file.size,
-                    type: file.type
-                };
+            filteredMusic.forEach((music, index) => {
+                const card = document.createElement('div');
+                card.className = 'sound-card fade-in';
+                card.style.animationDelay = `${index * 0.1}s`;
                 
-                sharedMusic.push(newMusic);
-                saveMusicToStorage();
-                initMusicButtons();
+                card.innerHTML = `
+                    <div class="sound-title">${music.name}</div>
+                    <div class="sound-info">
+                        <span class="sound-duration">${formatDuration(music.duration)}</span>
+                        <span class="sound-category">${getCategoryIcon(music.category)} ${music.category}</span>
+                    </div>
+                    <div class="sound-info">${formatFileSize(music.file_size)} • ${new Date(music.created_at).toLocaleDateString('uk-UA')}</div>
+                    ${checkAdmin() ? `
+                        <button class="delete-btn" onclick="event.stopPropagation(); deleteMusic(${music.id}, '${music.file_name}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    ` : ''}
+                `;
                 
-                showStatus("Музику успішно додано!", "success");
-                
-                // Очистити поля
-                musicName.value = "";
-                musicFile.value = "";
-                fileInfo.textContent = "Максимальний розмір: 50MB";
-            });
-            
-            audio.addEventListener('error', () => {
-                showStatus("Помилка завантаження файлу", "error");
-                URL.revokeObjectURL(url);
+                card.onclick = () => playMusic(music);
+                container.appendChild(card);
             });
         }
-        
-        // Видалення музики (тільки для адміна)
-        function deleteMusic(id) {
-            if (confirm("Ви впевнені, що хочете видалити цей трек?")) {
-                const index = sharedMusic.findIndex(music => music.id === id);
-                if (index !== -1) {
-                    // Звільнити URL об'єкта
-                    if (sharedMusic[index].url.startsWith('blob:')) {
-                        URL.revokeObjectURL(sharedMusic[index].url);
-                    }
-                    
-                    // Видалити з масиву
-                    sharedMusic.splice(index, 1);
-                    
-                    // Оновити локальне сховище та інтерфейс
-                    saveMusicToStorage();
-                    initMusicButtons();
-                    
-                    // Зупинити відтворення, якщо видаляємо поточний трек
-                    if (currentAudio) {
-                        currentAudio.pause();
-                        currentAudio = null;
-                    }
-                    
-                    showStatus("Трек успішно видалено", "success");
-                }
-            }
-        }
-        
-        // Форматування тривалості
+
+        // Допоміжні функції
         function formatDuration(seconds) {
-            if (isNaN(seconds)) return 'Невідомо';
-            const minutes = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+            if (!seconds || seconds === 0) return '--:--';
+            const min = Math.floor(seconds / 60);
+            const sec = Math.floor(seconds % 60);
+            return `${min}:${sec.toString().padStart(2, '0')}`;
         }
-        
-        // Форматування розміру файлу
+
         function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
+            if (!bytes) return '';
             const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];}
+
+        function getCategoryIcon(category) {
+            const icons = {
+                'chill': '😌',
+                'rock': '🎸',
+                'pop': '🎤',
+                'electronic': '⚡',
+                'classical': '🎻',
+                'hiphop': '🎧',
+                'jazz': '🎷'
+            };
+            return icons[category] || '🔮';
         }
-        
-        // Показати статус повідомлення
+
         function showStatus(message, type) {
-            statusMessage.textContent = message;
-            statusMessage.className = `status-message ${type}`;
-            statusMessage.style.display = 'block';
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${type}`;
             
-            setTimeout(() => {
-                statusMessage.style.display = 'none';
-            }, 3000);
-        }
-        
-        // Увійти як адміністратор
-        function loginAsAdmin() {
-            if (adminPassword.value === ADMIN_PASSWORD) {
-                isAdmin = true;
-                adminSection.classList.add('active');
-                document.body.classList.add('admin-logged-in');
-                loginSection.style.display = 'none';
-                toggleAdminBtn.classList.add('active');
-                toggleAdminBtn.textContent = '🔧 Адміністратор активний';
-                showStatus("Увійшли як адміністратор", "success");
-                adminPassword.value = "";
-                initMusicButtons(); // Оновити кнопки з можливістю видалення
-            } else {
-                showStatus("Невірний пароль", "error");
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.textContent = '';
+                    statusDiv.className = 'status-message';
+                }, 4000);
             }
         }
-        
-        // Вийти з адмін-режиму
-        function logoutAdmin() {
-            isAdmin = false;
-            adminSection.classList.remove('active');
-            document.body.classList.remove('admin-logged-in');
-            loginSection.style.display = 'block';
-            toggleAdminBtn.classList.remove('active');
-            toggleAdminBtn.textContent = '🔧 Режим адміністратора';
-            showStatus("Ви вийшли з режиму адміністратора", "success");
-            initMusicButtons(); // Оновити кнопки без можливості видалення
-        }
-        
-        // Перемикач адмін-панелі
+
         function toggleAdminPanel() {
-            adminPanel.classList.toggle('admin-hidden');
-            
-            if (adminPanel.classList.contains('admin-hidden')) {
-                if (isAdmin) {
-                    logoutAdmin();
-                }
-                toggleAdminBtn.textContent = '🔧 Режим адміністратора';
-                toggleAdminBtn.classList.remove('active');
-            } else {
-                toggleAdminBtn.textContent = '🔧 Закрити панель';
-                toggleAdminBtn.classList.add('active');
-            }
-        }
-        
-        // Оновлення інформації про файл
-        function updateFileInfo() {
-            if (musicFile.files[0]) {
-                const file = musicFile.files[0];
-                fileInfo.textContent = `Файл: ${file.name} (${formatFileSize(file.size)})`;
-                
-                if (file.size > MAX_FILE_SIZE) {
-                    fileInfo.style.color = '#e74c3c';
+            if (!checkAdmin()) {
+                const password = prompt('Введіть пароль адміністратора:');
+                if (password === '842861') {
+                    localStorage.setItem('admin_password', password);
+                    isAdmin = true;
+                    document.getElementById('admin-panel').classList.remove('admin-hidden');
+                    showStatus('Вітаємо в панелі адміністратора!', 'success');
                 } else {
-                    fileInfo.style.color = '#8da0b6';
+                    showStatus('Невірний пароль', 'error');
+                    return;
                 }
             } else {
-                fileInfo.textContent = "Максимальний розмір: 50MB";
-                fileInfo.style.color = '#8da0b6';
+                document.getElementById('admin-panel').classList.toggle('admin-hidden');
             }
         }
-        
-        // Пошук музики
-        function performSearch() {
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            const buttons = document.querySelectorAll('.sound-button');
-            let visibleCount = 0;
-            
-            // Видалити попереднє повідомлення про відсутність результатів
-            const existingMessage = document.getElementById('no-results');
-            if (existingMessage) {
-                existingMessage.remove();
+
+        // Обробники подій
+        document.getElementById('music-file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('file-info').textContent = 
+                    `Вибрано: ${file.name} (${formatFileSize(file.size)})`;
+                document.getElementById('music-name').value = file.name.replace(/\.[^/.]+$/, "");
             }
-            
-            buttons.forEach(button => {
-                const musicName = button.querySelector('span').textContent.toLowerCase();
-                if (musicName.includes(searchTerm)) {
-                    button.style.display = 'flex';
-                    visibleCount++;
-                } else {
-                    button.style.display = 'none';
-                }
-            });
-            
-            // Показати повідомлення, якщо нічого не знайдено
-            if (visibleCount === 0 && searchTerm !== '') {
-                const message = document.createElement('p');
-                message.id = 'no-results';
-                message.style.gridColumn = '1/-1';
-                message.style.textAlign = 'center';
-                message.style.color = '#8da0b6';
-                message.style.padding = '20px';
-                message.textContent = 'Нічого не знайдено';
-                soundContainer.appendChild(message);
-            }
-        }
-        
-        // Контроль гучності
-        volumeSlider.addEventListener('input', function() {
+        });
+
+        document.getElementById('volume-slider').addEventListener('input', function() {
             const volume = this.value;
-            volumeValue.textContent = Math.round(volume * 100) + '%';
-            
+            document.getElementById('volume-value').textContent = Math.round(volume * 100) + '%';
             if (currentAudio) {
                 currentAudio.volume = volume;
             }
         });
-        
-        // Перемикач адмін-панелі
-        toggleAdminBtn.addEventListener('click', toggleAdminPanel);
-        
-        // Кнопка входу
-        loginBtn.addEventListener('click', loginAsAdmin);
-        
-        // Додавання музики
-        addMusicBtn.addEventListener('click', addNewMusic);
-        
-        // Вхід по Enter
-        adminPassword.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                loginAsAdmin();
+
+        document.getElementById('search-input').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            if (searchTerm === '') {
+                filteredMusic = [...allMusic];
+            } else {
+                filteredMusic = allMusic.filter(music => 
+                    music.name.toLowerCase().includes(searchTerm) ||
+                    music.category.toLowerCase().includes(searchTerm)
+                );
+            }
+            renderMusic();
+        });
+
+        // Drag and drop для завантаження
+        const uploadZone = document.getElementById('upload-zone');
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.style.background = 'rgba(59, 130, 246, 0.2)';
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.style.background = '';
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.style.background = '';
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type.startsWith('audio/')) {
+                document.getElementById('music-file').files = files;
+                const file = files[0];
+                document.getElementById('file-info').textContent = 
+                    `Вибрано: ${file.name} (${formatFileSize(file.size)})`;
+                document.getElementById('music-name').value = file.name.replace(/\.[^/.]+$/, "");
             }
         });
-        
-        // Оновлення інформації про файл
-        musicFile.addEventListener('change', updateFileInfo);
-        
-        // Пошук при введенні тексту
-        searchInput.addEventListener('input', performSearch);
-        
-        // Пошук при натисканні кнопки
-        searchBtn.addEventListener('click', performSearch);
-        
-        // Пошук по Enter
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
-        });
-        
-        // Ініціалізація при завантаженні сторінки
-        window.addEventListener('load', loadMusicFromStorage);
-        
-        // Очищення URL при закритті сторінки
-        window.addEventListener('beforeunload', () => {
-            sharedMusic.forEach(music => {
-                if (music.url && music.url.startsWith('blob:')) {
-                    URL.revokeObjectURL(music.url);
-                }
-            });
+
+        // Завантажуємо музику при старті
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMusic();
+            
+            // Анімація завантаження
+            setTimeout(() => {
+                document.querySelector('.empty-state i').style.transform = 'rotate(360deg)';
+                document.querySelector('.empty-state i').style.transition = 'transform 1s ease';
+            }, 500);
         });
     </script>
 </body>
 </html>
-```
