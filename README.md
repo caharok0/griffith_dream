@@ -1,1 +1,0 @@
-# griffith_dream
